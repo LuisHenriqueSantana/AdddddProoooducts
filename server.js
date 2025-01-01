@@ -3,9 +3,19 @@ const fs = require('fs');
 const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const https = require('https'); // Importando o módulo https
+const path = require('path');
 
 const app = express();
 const port = 3000;
+
+// Carregar certificados SSL (em produção, você precisa de certificados válidos)
+const options = {
+  key: fs.readFileSync('caminho/para/chave-privada.pem'),
+  cert: fs.readFileSync('caminho/para/certificado.crt'),
+};
+
+const server = https.createServer(options, app); // Usar o servidor HTTPS
 
 // Middleware
 app.use(cors());
@@ -46,12 +56,13 @@ app.post('/produtos', (req, res) => {
 });
 
 // Servidor WebSocket
-app.server = app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
-});
-
-app.server.on('upgrade', (req, socket, head) => {
+server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => {
     wss.emit('connection', ws, req);
   });
+});
+
+// Iniciar o servidor HTTPS
+server.listen(port, () => {
+  console.log(`Servidor HTTPS rodando em https://localhost:${port}`);
 });
