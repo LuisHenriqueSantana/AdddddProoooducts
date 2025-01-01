@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // WebSocket para atualizações em tempo real
-  const socket = new WebSocket('ws://https://adddddprooooducts.onrender.com');
+  const socket = new WebSocket('ws://adddddprooooducts.onrender.com');
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
