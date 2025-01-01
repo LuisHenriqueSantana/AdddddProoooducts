@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adicionar Produto</title>
+</head>
+<body>
+  <h1>Adicionar Produto</h1>
+  <form id="form-produto">
+    <input type="text" id="nome" placeholder="Nome do produto" required>
+    <input type="number" id="preco" placeholder="Preço" required>
+    <textarea id="descricao" placeholder="Descrição"></textarea>
+    <button type="submit">Adicionar</button>
+  </form>
+  <script>
+    const form = document.getElementById('form-produto');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const preco = parseFloat(document.getElementById('preco').value);
+      const descricao = document.getElementById('descricao').value;
+
+      fetch('/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, preco, descricao }),
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(err => console.error('Erro ao adicionar produto:', err));
+    });
+  </script>
+</body>
+</html>
