@@ -16,10 +16,17 @@ app.use(express.static('public'));
 const wss = new WebSocket.Server({ noServer: true });
 
 // Endpoint para obter os produtos
+// Endpoint para obter os produtos
 app.get('/produtos', (req, res) => {
-  // Recarrega os produtos a partir do arquivo JSON
-  let produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
-  res.json(produtos);
+  // Sempre recarrega os produtos a partir do arquivo JSON
+  fs.readFile('produtos.json', 'utf8', (err, data) => {
+    if (err) {
+      console.error('Erro ao ler o arquivo produtos.json:', err);
+      return res.status(500).json({ error: 'Erro ao carregar os produtos.' });
+    }
+    let produtos = JSON.parse(data);
+    res.json(produtos);
+  });
 });
 
 // Endpoint para adicionar um novo produto
