@@ -3,19 +3,9 @@ const fs = require('fs');
 const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const https = require('https'); // Importando o módulo https
-const path = require('path');
 
 const app = express();
 const port = 3000;
-
-// Carregar certificados SSL (em produção, você precisa de certificados válidos)
-const options = {
-  key: fs.readFileSync('caminho/para/chave-privada.pem'),
-  cert: fs.readFileSync('caminho/para/certificado.crt'),
-};
-
-const server = https.createServer(options, app); // Usar o servidor HTTPS
 
 // Middleware
 app.use(cors());
@@ -25,11 +15,10 @@ app.use(express.static('public'));
 // WebSocket Server
 const wss = new WebSocket.Server({ noServer: true });
 
-// Carrega os produtos do arquivo JSON
-let produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
-
 // Endpoint para obter os produtos
 app.get('/produtos', (req, res) => {
+  // Recarrega os produtos a partir do arquivo JSON
+  let produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
   res.json(produtos);
 });
 
@@ -40,6 +29,10 @@ app.post('/produtos', (req, res) => {
     return res.status(400).json({ error: 'Nome e preço são obrigatórios!' });
   }
 
+  // Lê os produtos atuais
+  let produtos = JSON.parse(fs.readFileSync('produtos.json', 'utf8'));
+
+  // Adiciona o novo produto
   produtos.push(novoProduto);
 
   // Atualiza o arquivo JSON
@@ -56,13 +49,12 @@ app.post('/produtos', (req, res) => {
 });
 
 // Servidor WebSocket
-server.on('upgrade', (req, socket, head) => {
+app.server = app.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
+});
+
+app.server.on('upgrade', (req, socket, head) => {
   wss.handleUpgrade(req, socket, head, ws => {
     wss.emit('connection', ws, req);
   });
-});
-
-// Iniciar o servidor HTTPS
-server.listen(port, () => {
-  console.log(`Servidor HTTPS rodando em https://localhost:${port}`);
 });

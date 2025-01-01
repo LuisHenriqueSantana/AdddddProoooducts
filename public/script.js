@@ -271,6 +271,63 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Carregar os produtos do servidor
+function carregarProdutos() {
+  fetch('http://localhost:3000/produtos')
+    .then(response => response.json())
+    .then(produtos => {
+      const listaProdutos = document.getElementById('produtos-list');
+      listaProdutos.innerHTML = ''; // Limpa a lista antes de adicionar os produtos
+
+      produtos.forEach(produto => {
+        const li = document.createElement('li');
+        li.textContent = `${produto.nome} - R$ ${produto.preco}`;
+        listaProdutos.appendChild(li);
+      });
+    })
+    .catch(error => {
+      console.error('Erro ao carregar os produtos:', error);
+    });
+}
+
+// Adicionar um novo produto
+document.getElementById('produto-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const nome = document.getElementById('nome').value;
+  const preco = document.getElementById('preco').value;
+
+  const novoProduto = { nome, preco: parseFloat(preco) };
+
+  fetch('http://localhost:3000/produtos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(novoProduto)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Produto adicionado:', data);
+    carregarProdutos(); // Recarregar a lista de produtos
+  })
+  .catch(error => {
+    console.error('Erro ao adicionar o produto:', error);
+  });
+});
+
+// WebSocket para notificação de atualização
+const socket = new WebSocket('ws://localhost:3000');
+socket.onmessage = function(event) {
+  const data = JSON.parse(event.data);
+  if (data.tipo === 'atualizacao') {
+    carregarProdutos(); // Recarregar a lista de produtos quando houver atualização
+  }
+};
+
+// Carregar os produtos na inicialização
+carregarProdutos();
+
 
 // Função para resetar categoria e subcategoria para a 0
 function resetCategoryAndSubcategory() {
